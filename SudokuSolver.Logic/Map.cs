@@ -15,10 +15,6 @@ public sealed class Map : ICloneable
             for (var h = 0; h < Size; h++)
                 map[w, h] = income[w, h];
 
-        //foreach(var candidate in income.Candidates)
-        //{
-        //}
-
         for (var w = 0; w < Size; w++)
             for (var h = 0; h < Size; h++)
                 Candidates[w,h] = income.Candidates[w,h];
@@ -54,46 +50,34 @@ public sealed class Map : ICloneable
 
     public object Clone() => new Map(this);
 
-    public static Map Load(string text)
+    public static Map LoadText(string text)
     {
-        var array = ParseText(text);
-        var map = new Map(array);
+        var map = new Map();
+        int w = 0, h = 0;
+        foreach (var c in text)
+            if (c >= '0' && c <= '9')
+            {
+                map[w, h] = (byte)((byte)c - 0x30);
+                if (++h == Size) { h = 0; ++w; }
+            }
 
         return map;
     }
 
-    private static byte[,] ParseText(string text)
+    public override string ToString()
     {
-        var sb = new ByteBuilder();
-        foreach(var c in text)
+        var sb = new StringBuilder();
+        sb.AppendLine();
+        for (var w = 0; w < Size; w++)
         {
-            if(c >= '0' && c<='9')
+            if (w == 3 || w == 6) sb.AppendLine();
+            for (var h = 0; h < Size; h++)
             {
-                var num = (byte)((byte)c - 0x30);
-                sb.Append(num);
+                if (h == 3 || h == 6) sb.Append(" ");
+                sb.Append(map[w, h]);
             }
+            sb.AppendLine();
         }
-
-        var array = new byte[Size, Size];
-        for(var w=0; w<Size; ++w)
-            for(var h=0; h<Size; ++h)        
-                array[w, h] = sb.Buffer[w * Size + h];
-        
-        return array;
-    }
-}
-
-internal class ByteBuilder
-{
-    private const int Capacity = Map.Size * Map.Size;
-    readonly byte[] chunks = new byte[Capacity];
-    int pointer = 0;
-
-    public byte[] Buffer => chunks;
-
-    internal void Append(byte num)
-    {
-        if(pointer > Capacity) throw new IndexOutOfRangeException();
-        chunks[pointer++] = num;
+        return sb.ToString();
     }
 }
