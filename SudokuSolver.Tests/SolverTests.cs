@@ -1,4 +1,5 @@
 ﻿using SudokuSolver.Logic;
+using SudokuSolver.Tests.Extensions;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -14,7 +15,7 @@ public class SolverTests
     [Fact]
     public void SolveEasy_Success()
     {
-        var map = new byte[9, 9] {
+        var field = new byte[9, 9] {
         { 4,0,9,/**/7,0,0,/**/0,3,2},
         { 2,8,1,/**/6,9,0,/**/0,0,5},
         { 7,3,0,/**/4,8,2,/**/0,0,6},
@@ -28,7 +29,8 @@ public class SolverTests
         { 0,0,0,/**/0,0,9,/**/5,6,0},
         };
 
-        var result = _sut.Solve(new Map(map));
+        var map = new Map(field);
+        var result = _sut.Solve(map);
 
         var expected = new byte[9, 9] {
         { 4,6,9,/**/7,5,1,/**/8,3,2},
@@ -43,25 +45,14 @@ public class SolverTests
         { 1,5,8,/**/3,6,7,/**/4,2,9},
         { 3,4,7,/**/8,2,9,/**/5,6,1},
         };
-        var option = Compare(expected, result);
+        var option = expected.Compare(result);
         Assert.True(option.Result, option.Error.Message);
-    }
-
-    private static Option<bool, Error> Compare(byte[,] expected, Map actual)
-    {
-        var width = expected.GetLength(0);
-        var height = expected.GetLength(1);
-        for (var w = 0; w < width; w++)
-            for (var h = 0; h < height; h++)
-                if (expected[w, h] != actual[w, h])
-                    return new Option<bool, Error>(new Error($"Arrays differ at [{w}, {h}]"));
-        return new Option<bool, Error>(true);
     }
 
     [Fact]
     public void SolveCandidates_Success()
     {
-        var map = new byte[9, 9] {
+        var field = new byte[9, 9] {
         { 4,0,9,/**/7,0,0,/**/0,3,2},
         { 2,8,1,/**/6,9,0,/**/0,0,5},
         { 7,3,0,/**/4,8,2,/**/0,0,6},
@@ -75,7 +66,13 @@ public class SolverTests
         { 0,0,0,/**/0,0,9,/**/5,6,0},
         };
 
-        var result = _sut.SolveCandidates(new Map(map));
+        var map = new Map(field);
+        var result = _sut.SolveCandidates(map);
+
+        var c = result.Candidates;
+        Assert.True(c[0, 0].Options.Count == 0);
+        Assert.True(c[1, 0].Options.Count > 0, $"value is {result[1, 0]}");
+
     }
 }
 

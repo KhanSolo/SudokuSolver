@@ -7,6 +7,8 @@ public readonly struct Option<TResult, TError>
 
     public TResult Result { get; }
     public TError Error { get; }
+
+    public bool IsSuccess => Error == null;
 }
 
 public record Error(string Message);
