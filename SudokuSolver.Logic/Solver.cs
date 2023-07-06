@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace SudokuSolver.Logic;
 
 public sealed class Solver
 {
+    public Action<string> WriteLine = default;
+
     public Map Solve(Map map)
     {
         return map;
@@ -17,12 +21,11 @@ public sealed class Solver
         return candidates;
     }
 
-    private static Map CheckCandidates(Map map)
+    private Map CheckCandidates(Map map)
     {
-        for (var w = 0; w < Map.Size; w++)
-            for (var h = 0; h < Map.Size; h++)
-            {       
-                var val = map[w, h];
+        for (var h = 0; h < Map.Size; ++h)
+            for (var w = 0; w < Map.Size; ++w)
+            {
                 CheckColumn(map, w, h);
                 CheckRow(map, w, h);
                 CheckRectangle(map, w, h);
@@ -30,33 +33,36 @@ public sealed class Solver
         return map;
     }
 
-    private static void CheckRectangle(Map map, int width, int height)
+    private void CheckRectangle(Map map, int width, int height)
     {
         var current = map[width, height];
+        var currentCellCandidate = map.Candidates[width, height];
+
+        if (current != default)
+        {
+            //WriteLine?.Invoke($"{width}, {height} : {current}");
+            currentCellCandidate.Clear();
+            return;
+        }
 
         var leftUpperPoint = GetRectCoords(width, height);
 
         var existing = new List<byte>(16);
-        for (var w = leftUpperPoint.X; w < leftUpperPoint.X + 3; w++)
-            for (var h = leftUpperPoint.Y; h < leftUpperPoint.Y + 3; h++)
+        for (var h = leftUpperPoint.X; h < leftUpperPoint.X + 3; ++h)
+            for (var w = leftUpperPoint.Y; w < leftUpperPoint.Y + 3; ++w)
             {
-                if (map[w, height] != default)
-                    existing.Add(map[w, height]);
+                if (map[w, h] != default)
+                    existing.Add(map[w, h]);
             }
 
-        for (var w = leftUpperPoint.X; w < leftUpperPoint.X + 3; w++)
-            for (var h = leftUpperPoint.Y; h < leftUpperPoint.Y + 3; h++)
-            {
-                var cellCandidate = map.Candidates[w, h];
-                if (current == default)
-                {
-                    cellCandidate.Subtract(existing);
-                }
-                else
-                {
-                    cellCandidate.Clear();
-                }
-            }
+        currentCellCandidate.Subtract(existing);
+
+        if (WriteLine != default)
+        {
+            var exi = string.Join(",", existing.Select(e => e.ToString()));
+            var can = string.Join(",", currentCellCandidate.Options.Select(o => o.ToString()));
+            WriteLine($"{width}, {height} : {current}; exi : {exi}; can : {can}");
+        }
     }
 
     /// <summary>
@@ -76,49 +82,49 @@ public sealed class Solver
         }
     }
 
-    private static void CheckRow(Map map, int width, int height)
+    private void CheckRow(Map map, int width, int height)
     {
-        var current = map[width, height];
-
-        var existing = new List<byte>(16);
-        for (var w = 0; w < Map.Size; w++)
-            if (map[w, height] != default)
-                existing.Add(map[w, height]);
-
-        for (var w = 0; w < Map.Size; w++)
+        CheckInternal(map, width, height, (m, i, exi) =>
         {
-            var cellCandidate = map.Candidates[w, height];
-            if (current == default)
-            {
-                cellCandidate.Subtract(existing);
-            }
-            else
-            {
-                cellCandidate.Clear();
-            }
-        }
+            if (map[i, height] != default)
+                exi.Add(map[i, height]);
+        });
     }
 
-    private static void CheckColumn(Map map, int width, int height)
+    private void CheckColumn(Map map, int width, int height)
+    {
+        CheckInternal(map, width, height, (m, i, exi) =>
+        {
+            if (map[width, i] != default)
+                exi.Add(map[width, i]);
+        });
+    }
+
+    private void CheckInternal(Map map, int width, int height, Action<Map, int, List<byte>> action)
     {
         var current = map[width, height];
+        var currentCellCandidate = map.Candidates[width, height];
+
+        if (current != default)
+        {
+            //WriteLine?.Invoke($"{width}, {height} : {current}");
+            currentCellCandidate.Clear();
+            return;
+        }
 
         var existing = new List<byte>(16);
-        for (var h = 0; h < Map.Size; h++)            
-            if (map[width, h] != default)
-                existing.Add(map[width, h]);            
-
-        for(var h = 0; h< Map.Size; h++)
+        for (var i = 0; i < Map.Size; ++i)
         {
-            var cellCandidate = map.Candidates[width, h];
-            if (current == default)
-            {
-                cellCandidate.Subtract(existing);
-            }
-            else
-            {
-                cellCandidate.Clear();
-            }
+            action(map, i, existing);
+        }
+
+        currentCellCandidate.Subtract(existing);
+
+        if (WriteLine != default)
+        {
+            var exi = string.Join(",", existing.Select(e => e.ToString()));
+            var can = string.Join(",", currentCellCandidate.Options.Select(o => o.ToString()));
+            WriteLine($"{width}, {height} : {current}; exi : {exi}; can : {can}");
         }
     }
 }

@@ -1,16 +1,24 @@
 ﻿using SudokuSolver.Logic;
 using SudokuSolver.Tests.Extensions;
-using System;
-using System.Collections.Generic;
-using Xunit;
 
-//using Pair<K,V> = System.KeyValuePair<K,V>;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace SudokuSolver.Tests;
 
-public class SolverTests
+public sealed class SolverTests
 {
-    private readonly Solver _sut = new();
+    private readonly Solver _sut;
+    private readonly ITestOutputHelper _output;
+
+    public SolverTests(ITestOutputHelper output)
+    {        
+        _output = output;
+        _sut = new()
+        {
+            WriteLine = _output.WriteLine
+        };
+    }
 
     [Fact]
     public void SolveEasy_Success()
@@ -70,8 +78,9 @@ public class SolverTests
         var result = _sut.SolveCandidates(map);
 
         var c = result.Candidates;
-        Assert.True(c[0, 0].Options.Count == 0);
-        Assert.True(c[1, 0].Options.Count > 0, $"value is {result[1, 0]}");
+        Assert.True(c[0, 0].Count == 0);
+        Assert.True(c[0, 1].Count > 0, $"value is {result[0, 1]}");
+        Assert.True(c[0, 2].Count == 0, $"value is {result[0, 2]}");
 
     }
 }

@@ -11,19 +11,19 @@ public sealed class Map : ICloneable
 
     public Map(Map income) : this()
     {
-        for (var w = 0; w < Size; w++)
-            for (var h = 0; h < Size; h++)
+        for (var h = 0; h < Size; ++h)
+            for (var w = 0; w < Size; ++w)
                 map[w, h] = income[w, h];
 
-        for (var w = 0; w < Size; w++)
-            for (var h = 0; h < Size; h++)
+        for (var h = 0; h < Size; ++h)
+            for (var w = 0; w < Size; ++w)
                 Candidates[w,h] = income.Candidates[w,h];
     }
 
     public Map(byte[,] income) : this()
     {
-        for (var w = 0; w < Size; w++)
-            for (var h = 0; h < Size; h++)                
+        for (var h = 0; h < Size; ++h)
+            for (var w = 0; w < Size; ++w)
                 map[w,h] = income[w,h];
     }
 
