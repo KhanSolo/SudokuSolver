@@ -23,12 +23,18 @@ public sealed class Solver
 
     private Map CheckCandidates(Map map)
     {
-        for (var h = 0; h < Map.Size; ++h)
-            for (var w = 0; w < Map.Size; ++w)
+        for (var w = 0; w < Map.Size; ++w)
+            for (var h = 0; h < Map.Size; ++h)            
             {
                 CheckColumn(map, w, h);
                 CheckRow(map, w, h);
                 CheckRectangle(map, w, h);
+
+                if (map[w,h] == default && WriteLine != null)
+                {
+                    var can = string.Join(", ", map.Candidates[w, h].Options.Select(c => c.ToString()));
+                    WriteLine($"{w}, {h}; can : {can}");
+                }
             }
         return map;
     }
@@ -48,8 +54,8 @@ public sealed class Solver
         var leftUpperPoint = GetRectCoords(width, height);
 
         var existing = new List<byte>(16);
-        for (var h = leftUpperPoint.X; h < leftUpperPoint.X + 3; ++h)
-            for (var w = leftUpperPoint.Y; w < leftUpperPoint.Y + 3; ++w)
+        for (var h = leftUpperPoint.Y; h < leftUpperPoint.Y + 3; ++h)
+            for (var w = leftUpperPoint.X; w < leftUpperPoint.X + 3; ++w)
             {
                 if (map[w, h] != default)
                     existing.Add(map[w, h]);
@@ -57,12 +63,12 @@ public sealed class Solver
 
         currentCellCandidate.Subtract(existing);
 
-        if (WriteLine != default)
-        {
-            var exi = string.Join(",", existing.Select(e => e.ToString()));
-            var can = string.Join(",", currentCellCandidate.Options.Select(o => o.ToString()));
-            WriteLine($"{width}, {height} : {current}; exi : {exi}; can : {can}");
-        }
+        //if (WriteLine != default)
+        //{
+        //    var exi = string.Join(",", existing.Select(e => e.ToString()));
+        //    var can = string.Join(",", currentCellCandidate.Options.Select(o => o.ToString()));
+        //    WriteLine($"{width}, {height} : {current}; exi : {exi}; can : {can}");
+        //}
     }
 
     /// <summary>
@@ -120,11 +126,11 @@ public sealed class Solver
 
         currentCellCandidate.Subtract(existing);
 
-        if (WriteLine != default)
-        {
-            var exi = string.Join(",", existing.Select(e => e.ToString()));
-            var can = string.Join(",", currentCellCandidate.Options.Select(o => o.ToString()));
-            WriteLine($"{width}, {height} : {current}; exi : {exi}; can : {can}");
-        }
+        //if (WriteLine != default)
+        //{
+        //    var exi = string.Join(",", existing.Select(e => e.ToString()));
+        //    var can = string.Join(",", currentCellCandidate.Options.Select(o => o.ToString()));
+        //    WriteLine($"{width}, {height} : {current}; exi : {exi}; can : {can}");
+        //}
     }
 }
